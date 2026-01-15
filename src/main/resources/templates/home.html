@@ -1,32 +1,64 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org" th:replace="layout :: content">
 <div th:fragment="content">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h3">週単位プラン - <span th:text="${month}"></span></h1>
-        <a class="btn btn-outline-primary" th:href="@{/?month={month}(month=${month.minusMonths(1)})}">前月</a>
-        <a class="btn btn-outline-primary" th:href="@{/?month={month}(month=${month.plusMonths(1)})}">翌月</a>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h1 class="h3 mb-0">ホーム（週ステータス）</h1>
+        <div class="d-flex align-items-center gap-2">
+            <a class="btn btn-outline-secondary" th:href="@{/?month={month}(month=${month.minusMonths(1)})}">前月</a>
+            <span class="fw-semibold" th:text="${month}"></span>
+            <a class="btn btn-outline-secondary" th:href="@{/?month={month}(month=${month.plusMonths(1)})}">次月</a>
+            <a class="btn btn-outline-primary" th:href="@{/?month={month}(month=${currentMonth})}">今月</a>
+        </div>
     </div>
     <div class="table-responsive">
-        <table class="table table-striped align-middle">
+        <table class="table table-bordered align-middle">
             <thead>
             <tr>
-                <th>週開始</th>
-                <th>週終了</th>
-                <th>ステータス</th>
-                <th>確定レシピ</th>
-                <th></th>
+                <th class="text-center">月</th>
+                <th class="text-center">火</th>
+                <th class="text-center">水</th>
+                <th class="text-center">木</th>
+                <th class="text-center">金</th>
+                <th class="text-center">土</th>
+                <th class="text-center">日</th>
+                <th style="min-width: 220px;">週サマリ</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="week : ${weeks}">
-                <td th:text="${week.weekStart}"></td>
-                <td th:text="${week.weekEnd}"></td>
-                <td>
-                    <span class="badge bg-secondary" th:text="${week.status}"></span>
+            <tr th:each="row : ${calendar}">
+                <td th:each="day : ${row.days}"
+                    class="text-center"
+                    th:classappend="${day.month != month.month} ? 'text-muted bg-light' : ''">
+                    <span th:text="${#temporals.format(day, 'M/d')}"></span>
                 </td>
-                <td th:text="${week.confirmedRecipe != null ? week.confirmedRecipe.title : '-'}"></td>
                 <td>
-                    <a class="btn btn-sm btn-primary" th:href="@{/weeks/{start}(start=${week.weekStart})}">詳細</a>
+                    <div class="small text-muted"
+                         th:text="${#temporals.format(row.plan.weekStart, 'yyyy/MM/dd')} + '〜' + ${#temporals.format(row.plan.weekEnd, 'yyyy/MM/dd')}"></div>
+                    <div class="mt-1">
+                        <span th:switch="${row.plan.status}">
+                            <span class="badge bg-secondary" th:case="'NOT_CREATED'">未作成</span>
+                            <span class="badge bg-warning text-dark" th:case="'GENERATING'">作成中</span>
+                            <span class="badge bg-success" th:case="'CONFIRMED'">確定</span>
+                            <span class="badge bg-secondary" th:case="*"
+                                  th:text="${row.plan.status}"></span>
+                        </span>
+                    </div>
+                    <div class="small text-truncate mt-1"
+                         th:if="${row.plan.confirmedRecipe != null}"
+                         th:text="${row.plan.confirmedRecipe.title}"></div>
+                    <div class="mt-2 d-flex flex-wrap gap-2">
+                        <form th:if="${row.plan.status.name() == 'NOT_CREATED'}"
+                              th:action="@{/weeks/{start}/generate(start=${row.plan.weekStart})}"
+                              method="post">
+                            <button class="btn btn-sm btn-outline-primary" type="submit">作成依頼</button>
+                        </form>
+                        <a th:if="${row.plan.status.name() == 'GENERATING'}"
+                           class="btn btn-sm btn-outline-warning"
+                           th:href="@{/weeks/{start}(start=${row.plan.weekStart})}">確認</a>
+                        <a th:if="${row.plan.status.name() == 'CONFIRMED'}"
+                           class="btn btn-sm btn-outline-success"
+                           th:href="@{/weeks/{start}(start=${row.plan.weekStart})}">見る</a>
+                    </div>
                 </td>
             </tr>
             </tbody>
