@@ -1,12 +1,13 @@
 package com.heibonsalaryman.recipemaker.ai;
 
-import com.heibonsalaryman.recipemaker.domain.Recipe;
-import com.heibonsalaryman.recipemaker.domain.StorageType;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+
 import org.springframework.stereotype.Service;
+
+import com.heibonsalaryman.recipemaker.domain.Recipe;
+import com.heibonsalaryman.recipemaker.domain.StorageType;
 
 @Service
 public class DummyAiService implements AiService {
