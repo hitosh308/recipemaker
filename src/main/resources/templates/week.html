@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" th:replace="layout :: content">
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="h3">週詳細</h1>
+            <p class="text-muted" th:text="${plan.weekStart} + ' 〜 ' + ${plan.weekEnd}"></p>
+        </div>
+        <span class="badge bg-info" th:text="${plan.status}"></span>
+    </div>
+
+    <div class="mb-4">
+        <h2 class="h5">アクション</h2>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" type="button">生成</button>
+            <button class="btn btn-outline-warning" type="button">再生成</button>
+            <button class="btn btn-success" type="button">確定</button>
+        </div>
+    </div>
+
+    <div>
+        <h2 class="h5">候補レシピ</h2>
+        <div class="row" th:if="${candidates != null}">
+            <div class="col-md-4" th:each="candidate : ${candidates}">
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${candidate.recipe.title}"></h5>
+                        <p class="card-text text-muted">Candidate ID: <span th:text="${candidate.id}"></span></p>
+                        <button class="btn btn-sm btn-outline-secondary" type="button">選択</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p class="text-muted" th:if="${candidates == null || #lists.isEmpty(candidates)}">候補がまだありません。</p>
+    </div>
+</div>
+</html>

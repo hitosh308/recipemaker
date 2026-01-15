@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" th:replace="layout :: content">
+<div th:fragment="content">
+    <h1 class="h3 mb-3">調理履歴</h1>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>日付</th>
+            <th>レシピ</th>
+            <th>人数</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="log : ${logs}">
+            <td th:text="${log.cookedAt}"></td>
+            <td th:text="${log.recipe != null ? log.recipe.title : '-'}"></td>
+            <td th:text="${log.servings}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</html>
