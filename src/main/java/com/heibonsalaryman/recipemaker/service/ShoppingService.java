@@ -5,6 +5,9 @@ import com.heibonsalaryman.recipemaker.domain.ShoppingItem;
 import com.heibonsalaryman.recipemaker.repository.PantryItemRepository;
 import com.heibonsalaryman.recipemaker.repository.ShoppingItemRepository;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +22,9 @@ public class ShoppingService {
                            PantryItemRepository pantryItemRepository) {
         this.shoppingItemRepository = shoppingItemRepository;
         this.pantryItemRepository = pantryItemRepository;
+    }
+
+    public record MissingIngredientInput(String name, Double quantity, String unit, Integer shelfLifeDays) {
     }
 
     @Transactional
@@ -36,5 +42,69 @@ public class ShoppingService {
 
         shoppingItemRepository.delete(item);
         return saved;
+    }
+
+    @Transactional
+    public int addMissingIngredientsToShopping(List<MissingIngredientInput> missingIngredients) {
+        int updatedCount = 0;
+        for (MissingIngredientInput missing : missingIngredients) {
+            if (missing == null || missing.name() == null || missing.name().isBlank()) {
+                continue;
+            }
+            ShoppingItem target = findMergeTarget(missing);
+            if (target != null) {
+                target.setQuantity(mergeQuantity(target.getQuantity(), missing.quantity()));
+                if (missing.shelfLifeDays() != null) {
+                    target.setShelfLifeDaysHint(missing.shelfLifeDays());
+                }
+                shoppingItemRepository.save(target);
+            } else {
+                ShoppingItem item = new ShoppingItem();
+                item.setName(missing.name().trim());
+                item.setQuantity(missing.quantity());
+                item.setUnit(trimUnit(missing.unit()));
+                item.setChecked(false);
+                item.setShelfLifeDaysHint(missing.shelfLifeDays());
+                shoppingItemRepository.save(item);
+            }
+            updatedCount++;
+        }
+        return updatedCount;
+    }
+
+    private ShoppingItem findMergeTarget(MissingIngredientInput missing) {
+        List<ShoppingItem> sameName = shoppingItemRepository.findByNameIgnoreCase(missing.name().trim());
+        if (sameName.isEmpty()) {
+            return null;
+        }
+        String normalizedUnit = normalizeUnit(missing.unit());
+        return sameName.stream()
+            .filter(item -> Objects.equals(normalizeUnit(item.getUnit()), normalizedUnit))
+            .findFirst()
+            .orElse(null);
+    }
+
+    private String normalizeUnit(String unit) {
+        if (unit == null || unit.isBlank()) {
+            return null;
+        }
+        return unit.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String trimUnit(String unit) {
+        if (unit == null || unit.isBlank()) {
+            return null;
+        }
+        return unit.trim();
+    }
+
+    private Double mergeQuantity(Double current, Double addition) {
+        if (current == null) {
+            return addition;
+        }
+        if (addition == null) {
+            return current;
+        }
+        return current + addition;
     }
 }

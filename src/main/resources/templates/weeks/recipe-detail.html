@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content})}">
+<div th:fragment="content">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h1 class="h3 mb-1" th:text="${recipe.title}">レシピ詳細</h1>
+            <div class="text-muted"
+                 th:text="${#temporals.format(plan.weekStart, 'yyyy/MM/dd')} + '〜' + ${#temporals.format(plan.weekEnd, 'yyyy/MM/dd')}"></div>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a class="btn btn-outline-secondary" th:href="${backUrl}">戻る</a>
+            <span th:switch="${plan.status}">
+                <span class="badge bg-secondary" th:case="'NOT_CREATED'">未作成</span>
+                <span class="badge bg-warning text-dark" th:case="'GENERATING'">作成中</span>
+                <span class="badge bg-success" th:case="'CONFIRMED'">確定</span>
+                <span class="badge bg-secondary" th:case="*" th:text="${plan.status}"></span>
+            </span>
+        </div>
+    </div>
+
+    <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                    <h2 class="h5 mb-1">基本情報</h2>
+                    <div class="text-muted">
+                        調理時間:
+                        <span th:text="${recipe.cookTimeMinutes} ?: '-'">-</span> 分 /
+                        人数:
+                        <span th:text="${recipe.servings} ?: '-'">-</span> 人前
+                    </div>
+                </div>
+                <div class="text-end" th:if="${showCookButton}">
+                    <form th:action="@{/weeks/{start}/recipes/{id}/cook(start=${plan.weekStart},id=${recipe.id})}"
+                          method="post">
+                        <button class="btn btn-outline-success" type="submit">調理した（履歴に記録）</button>
+                    </form>
+                </div>
+            </div>
+            <div class="mt-3" th:if="${!tags.isEmpty()}">
+                <span class="badge rounded-pill text-bg-light me-1" th:each="tag : ${tags}"
+                      th:text="${tag}">tag</span>
+            </div>
+            <div class="alert alert-warning mt-3" th:if="${tagsParseError}">
+                タグの解析に失敗しました。
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h5">材料</h2>
+            <div class="alert alert-warning" th:if="${ingredientsParseError}">
+                材料の解析に失敗しました。
+            </div>
+            <div th:if="${!ingredientsParseError}">
+                <div class="text-muted" th:if="${ingredients.isEmpty()}">材料情報がありません。</div>
+                <table class="table table-sm align-middle" th:if="${!ingredients.isEmpty()}">
+                    <thead>
+                    <tr>
+                        <th>食材名</th>
+                        <th>分量</th>
+                        <th>単位</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="ingredient : ${ingredients}">
+                        <td>
+                            <span th:text="${ingredient.name}">ingredient</span>
+                            <span class="badge text-bg-info ms-2" th:if="${ingredient.stockPriority}">在庫優先</span>
+                        </td>
+                        <td th:text="${ingredient.quantity} ?: '-'">-</td>
+                        <td th:text="${ingredient.unit} ?: '-'">-</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h5">手順</h2>
+            <div class="alert alert-warning" th:if="${stepsParseError}">
+                手順の解析に失敗しました。
+            </div>
+            <div th:if="${!stepsParseError}">
+                <div class="text-muted" th:if="${steps.isEmpty()}">手順情報がありません。</div>
+                <ol class="mb-0" th:if="${!steps.isEmpty()}">
+                    <li th:each="step : ${steps}" th:text="${step}">step</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h5">栄養（1人前）</h2>
+            <div class="alert alert-warning" th:if="${nutritionParseError}">
+                栄養情報の解析に失敗しました。
+            </div>
+            <div th:if="${!nutritionParseError}">
+                <div class="text-muted" th:if="${nutritionItems.isEmpty()}">栄養情報がありません。</div>
+                <div class="row g-3" th:if="${!nutritionItems.isEmpty()}">
+                    <div class="col-sm-6 col-lg-4" th:each="item : ${nutritionItems}">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="text-muted small" th:text="${item.label}">項目</div>
+                                <div class="h5 mb-0" th:text="${item.value}">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <h2 class="h5 mb-0">不足食材</h2>
+                <form th:if="${!missingIngredientsParseError && !missingIngredients.isEmpty()}"
+                      th:action="@{/weeks/{start}/recipes/{id}/add-missing-to-shopping(start=${plan.weekStart},id=${recipe.id})}"
+                      method="post">
+                    <button class="btn btn-primary" type="submit">不足食材を買い物リストに追加</button>
+                </form>
+            </div>
+            <div class="alert alert-warning" th:if="${missingIngredientsParseError}">
+                不足食材の解析に失敗しました。
+            </div>
+            <div th:if="${!missingIngredientsParseError}">
+                <div class="text-muted" th:if="${missingIngredients.isEmpty()}">不足はありません。</div>
+                <table class="table table-sm align-middle" th:if="${!missingIngredients.isEmpty()}">
+                    <thead>
+                    <tr>
+                        <th>食材名</th>
+                        <th>分量</th>
+                        <th>単位</th>
+                        <th>目安消費期限(日)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="missing : ${missingIngredients}">
+                        <td th:text="${missing.name}">name</td>
+                        <td th:text="${missing.quantityText} ?: '-'">-</td>
+                        <td th:text="${missing.unit} ?: '-'">-</td>
+                        <td th:text="${missing.shelfLifeDays} ?: '-'">-</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</html>
