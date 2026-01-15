@@ -72,7 +72,9 @@ public class OpenAiClient {
     private String buildRequest(String systemPrompt, String userPrompt) {
         ObjectNode payload = objectMapper.createObjectNode();
         payload.put("model", properties.getModel());
-        payload.set("response_format", objectMapper.createObjectNode().put("type", "json_object"));
+        ObjectNode textNode = objectMapper.createObjectNode();
+        textNode.set("format", objectMapper.createObjectNode().put("type", "json_object"));
+        payload.set("text", textNode);
         ArrayNode input = payload.putArray("input");
         input.add(messageNode("system", systemPrompt));
         input.add(messageNode("user", userPrompt));
