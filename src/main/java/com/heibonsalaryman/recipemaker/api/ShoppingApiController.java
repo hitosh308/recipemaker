@@ -2,6 +2,7 @@ package com.heibonsalaryman.recipemaker.api;
 
 import com.heibonsalaryman.recipemaker.domain.PantryItem;
 import com.heibonsalaryman.recipemaker.domain.ShoppingItem;
+import com.heibonsalaryman.recipemaker.domain.StorageType;
 import com.heibonsalaryman.recipemaker.repository.ShoppingItemRepository;
 import com.heibonsalaryman.recipemaker.service.ShoppingService;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -51,7 +53,8 @@ public class ShoppingApiController {
     }
 
     @PostMapping("/{id}/move-to-pantry")
-    public PantryItem moveToPantry(@PathVariable("id") UUID id) {
-        return shoppingService.moveToPantry(id);
+    public PantryItem moveToPantry(@PathVariable("id") UUID id,
+                                   @RequestParam("storageType") StorageType storageType) {
+        return shoppingService.moveToPantry(id, storageType).item();
     }
 }
