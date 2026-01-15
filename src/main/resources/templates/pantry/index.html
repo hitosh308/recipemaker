@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" th:replace="layout :: layout(~{::content})">
+<div th:fragment="content">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+        <div>
+            <h1 class="h3 mb-1">在庫</h1>
+            <p class="text-muted mb-0">消費期限が近い順に一覧表示します。</p>
+        </div>
+        <a class="btn btn-primary" th:href="@{/pantry/new}">在庫追加</a>
+    </div>
+
+    <form class="row g-2 mb-3" method="get" th:action="@{/pantry}">
+        <div class="col-sm-6 col-md-4">
+            <input class="form-control" name="q" placeholder="食材名で検索" th:value="${query}">
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-secondary" type="submit">検索</button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+            <tr>
+                <th>期限</th>
+                <th>残り</th>
+                <th>食材名</th>
+                <th>数量</th>
+                <th>保存方法</th>
+                <th>購入日</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(items)}">
+                <td class="text-muted text-center" colspan="7">在庫がありません。追加してください。</td>
+            </tr>
+            <tr th:each="item : ${items}">
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <span th:text="${item.effectiveExpiresAt} ?: '-'"></span>
+                        <span class="badge bg-info text-dark" th:if="${item.hasOverride}">上書き</span>
+                    </div>
+                </td>
+                <td>
+                    <span th:if="${item.daysToExpire != null}"
+                          th:classappend="${item.daysToExpire < 0} ? 'badge bg-danger' : (${item.daysToExpire <= 2} ? 'badge bg-warning text-dark' : 'badge bg-secondary')"
+                          th:text="${item.daysToExpire < 0} ? 'D' + item.daysToExpire : 'D+' + item.daysToExpire">
+                        D+0
+                    </span>
+                    <span th:if="${item.daysToExpire == null}">-</span>
+                </td>
+                <td>
+                    <div class="fw-semibold" th:text="${item.name}"></div>
+                    <div class="text-muted small" th:if="${item.expireConfidence != null}">
+                        信頼度: <span th:text="${item.expireConfidence}"></span>
+                    </div>
+                </td>
+                <td th:text="${item.quantity != null} ? item.quantity + ' ' + item.unit : '-'"></td>
+                <td th:text="${item.storageType} ?: '-'"></td>
+                <td th:text="${item.purchasedAt} ?: '-'"></td>
+                <td>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-sm btn-outline-secondary"
+                           th:href="@{/pantry/{id}/edit(id=${item.id})}">編集</a>
+                        <form method="post" th:action="@{/pantry/{id}/delete(id=${item.id})}"
+                              onsubmit="return confirm('この在庫を削除しますか？');">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">削除</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</html>
