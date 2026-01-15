@@ -86,7 +86,7 @@ public class OpenAiClient {
         message.put("role", role);
         ArrayNode content = message.putArray("content");
         content.add(objectMapper.createObjectNode()
-            .put("type", "text")
+            .put("type", "input_text")
             .put("text", text));
         return message;
     }
