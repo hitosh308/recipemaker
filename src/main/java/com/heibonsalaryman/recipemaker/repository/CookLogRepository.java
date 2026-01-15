@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CookLogRepository extends JpaRepository<CookLog, UUID> {
     List<CookLog> findByCookedAtBetween(LocalDateTime from, LocalDateTime to);
+
+    List<CookLog> findByCookedAtBetweenOrderByCookedAtDesc(LocalDateTime from, LocalDateTime to);
 }

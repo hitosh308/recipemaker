@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content})}">
+<div th:fragment="content">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+        <h1 class="h3 mb-0">調理履歴</h1>
+        <div class="btn-group" role="group" aria-label="期間フィルタ">
+            <a class="btn btn-outline-primary btn-sm"
+               th:classappend="${days == 14} ? ' active'"
+               th:href="@{/history(days=14)}">直近14日</a>
+            <a class="btn btn-outline-primary btn-sm"
+               th:classappend="${days == 30} ? ' active'"
+               th:href="@{/history(days=30)}">直近30日</a>
+        </div>
+    </div>
+
+    <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive" th:if="${!logs.isEmpty()}">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>日付</th>
+                        <th>レシピ</th>
+                        <th>人数</th>
+                        <th>栄養サマリ</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="log : ${logs}">
+                        <td th:text="${#temporals.format(log.cookedAt, 'yyyy/MM/dd HH:mm')}">2024/01/01 12:00</td>
+                        <td th:text="${log.recipeTitle}">Recipe</td>
+                        <td th:text="${log.servings}">2</td>
+                        <td th:text="${log.nutritionSummary}">カロリー 500kcal</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a class="btn btn-sm btn-outline-primary"
+                                   th:if="${log.recipeId != null and log.weekStart != null}"
+                                   th:href="@{/weeks/{weekStart}/recipes/{recipeId}(weekStart=${log.weekStart},recipeId=${log.recipeId})}">
+                                    詳細を見る
+                                </a>
+                                <span class="text-muted small" th:if="${log.recipeId == null or log.weekStart == null}">詳細なし</span>
+                                <form th:action="@{/history/{id}/delete(id=${log.id})}" method="post">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">削除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-muted" th:if="${logs.isEmpty()}">履歴がありません。</div>
+        </div>
+    </div>
+</div>
+</html>

@@ -161,6 +161,7 @@ public class DataSeeder implements CommandLineRunner {
         CookLog log = new CookLog();
         log.setRecipe(recipe);
         log.setCookedAt(cookedAt);
+        log.setWeekStart(WeekUtil.getWeekStart(cookedAt.toLocalDate()));
         log.setServings(servings);
         log.setNutritionTotalJson("{\"calories\":" + (servings * 500) + "}");
         log.setNutritionPerServingJson("{\"calories\":500}");
