@@ -9,6 +9,9 @@
         <a class="btn btn-primary" th:href="@{/pantry/new}">在庫追加</a>
     </div>
 
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${estimateWarning}" class="alert alert-warning" th:text="${estimateWarning}"></div>
+
     <form class="row g-2 mb-3" method="get" th:action="@{/pantry}">
         <div class="col-sm-6 col-md-4">
             <input class="form-control" name="q" placeholder="食材名で検索" th:value="${query}">
