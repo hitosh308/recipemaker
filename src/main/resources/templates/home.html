@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" th:replace="layout :: content">
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3">週単位プラン - <span th:text="${month}"></span></h1>
+        <a class="btn btn-outline-primary" th:href="@{/?month={month}(month=${month.minusMonths(1)})}">前月</a>
+        <a class="btn btn-outline-primary" th:href="@{/?month={month}(month=${month.plusMonths(1)})}">翌月</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th>週開始</th>
+                <th>週終了</th>
+                <th>ステータス</th>
+                <th>確定レシピ</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="week : ${weeks}">
+                <td th:text="${week.weekStart}"></td>
+                <td th:text="${week.weekEnd}"></td>
+                <td>
+                    <span class="badge bg-secondary" th:text="${week.status}"></span>
+                </td>
+                <td th:text="${week.confirmedRecipe != null ? week.confirmedRecipe.title : '-'}"></td>
+                <td>
+                    <a class="btn btn-sm btn-primary" th:href="@{/weeks/{start}(start=${week.weekStart})}">詳細</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" th:replace="layout :: content">
+<div th:fragment="content">
+    <h1 class="h3 mb-3">在庫</h1>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>品目</th>
+            <th>数量</th>
+            <th>保管</th>
+            <th>期限予測</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${items}">
+            <td th:text="${item.name}"></td>
+            <td th:text="${item.quantity} + ' ' + ${item.unit}"></td>
+            <td th:text="${item.storageType}"></td>
+            <td th:text="${item.expiresAtPredicted}"></td>
+        </tr>
+        </tbody>
+    </table>
+    <button class="btn btn-primary" type="button">追加</button>
+</div>
+</html>
