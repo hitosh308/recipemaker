@@ -2,8 +2,6 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org" th:replace="layout :: layout(~{::content})">
 <div th:fragment="content">
     <h1 class="h3 mb-3">在庫編集</h1>
-    <p class="text-muted">在庫編集フォームは別Issueで実装予定です。</p>
-    <p class="small text-muted">ID: <span th:text="${itemId}"></span></p>
-    <a class="btn btn-outline-secondary" th:href="@{/pantry}">一覧へ戻る</a>
+    <div th:replace="pantry/form :: form(@{/pantry/{id}/edit(id=${item.id})})"></div>
 </div>
 </html>
