@@ -5,12 +5,15 @@ import com.heibonsalaryman.recipemaker.domain.Recipe;
 import com.heibonsalaryman.recipemaker.domain.WeekCandidate;
 import com.heibonsalaryman.recipemaker.domain.WeekPlan;
 import com.heibonsalaryman.recipemaker.domain.WeekStatus;
+import com.heibonsalaryman.recipemaker.repository.CookLogRepository;
+import com.heibonsalaryman.recipemaker.repository.PantryItemRepository;
 import com.heibonsalaryman.recipemaker.repository.RecipeRepository;
 import com.heibonsalaryman.recipemaker.repository.WeekCandidateRepository;
 import com.heibonsalaryman.recipemaker.repository.WeekPlanRepository;
 import com.heibonsalaryman.recipemaker.util.WeekUtil;
 import com.heibonsalaryman.recipemaker.util.WeekUtil.WeekRange;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.Comparator;
 import java.util.List;
@@ -25,15 +28,24 @@ public class WeekPlanService {
     private final WeekPlanRepository weekPlanRepository;
     private final WeekCandidateRepository weekCandidateRepository;
     private final RecipeRepository recipeRepository;
+    private final PantryItemRepository pantryItemRepository;
+    private final CookLogRepository cookLogRepository;
+    private final AiContextBuilder aiContextBuilder;
     private final AiService aiService;
 
     public WeekPlanService(WeekPlanRepository weekPlanRepository,
                            WeekCandidateRepository weekCandidateRepository,
                            RecipeRepository recipeRepository,
+                           PantryItemRepository pantryItemRepository,
+                           CookLogRepository cookLogRepository,
+                           AiContextBuilder aiContextBuilder,
                            AiService aiService) {
         this.weekPlanRepository = weekPlanRepository;
         this.weekCandidateRepository = weekCandidateRepository;
         this.recipeRepository = recipeRepository;
+        this.pantryItemRepository = pantryItemRepository;
+        this.cookLogRepository = cookLogRepository;
+        this.aiContextBuilder = aiContextBuilder;
         this.aiService = aiService;
     }
 
@@ -128,7 +140,15 @@ public class WeekPlanService {
     }
 
     private void createCandidates(WeekPlan plan, int candidateGroupVersion) {
-        List<Recipe> recipes = aiService.generateWeeklyRecipeCandidates(plan.getWeekStart(), null, null, null);
+        LocalDate today = LocalDate.now();
+        String pantryContext = aiContextBuilder.buildPantryContext(pantryItemRepository.findAll(), today, 30);
+        LocalDateTime from = today.minusDays(14).atStartOfDay();
+        LocalDateTime to = LocalDateTime.now();
+        String historyContext = aiContextBuilder.buildRecentHistory(
+            cookLogRepository.findByCookedAtBetweenOrderByCookedAtDesc(from, to));
+        String constraints = aiContextBuilder.defaultConstraints();
+        List<Recipe> recipes = aiService.generateWeeklyRecipeCandidates(
+            plan.getWeekStart(), constraints, pantryContext, historyContext);
         recipeRepository.saveAll(recipes);
         for (Recipe recipe : recipes) {
             WeekCandidate candidate = new WeekCandidate();
