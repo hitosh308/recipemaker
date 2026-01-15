@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -22,6 +23,9 @@ public class CookLog {
 
     @Column(name = "cooked_at", nullable = false)
     private LocalDateTime cookedAt;
+
+    @Column(name = "week_start")
+    private LocalDate weekStart;
 
     @ManyToOne
     @JoinColumn(name = "recipe_id")
@@ -59,6 +63,14 @@ public class CookLog {
 
     public void setCookedAt(LocalDateTime cookedAt) {
         this.cookedAt = cookedAt;
+    }
+
+    public LocalDate getWeekStart() {
+        return weekStart;
+    }
+
+    public void setWeekStart(LocalDate weekStart) {
+        this.weekStart = weekStart;
     }
 
     public Recipe getRecipe() {

@@ -5,6 +5,7 @@ import com.heibonsalaryman.recipemaker.domain.CookLog;
 import com.heibonsalaryman.recipemaker.domain.Recipe;
 import com.heibonsalaryman.recipemaker.repository.CookLogRepository;
 import com.heibonsalaryman.recipemaker.repository.RecipeRepository;
+import com.heibonsalaryman.recipemaker.util.WeekUtil;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -48,7 +49,9 @@ public class HistoryApiController {
                 .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
         }
         log.setRecipe(recipe);
-        log.setCookedAt(request.cookedAt() == null ? LocalDateTime.now() : request.cookedAt());
+        LocalDateTime cookedAt = request.cookedAt() == null ? LocalDateTime.now() : request.cookedAt();
+        log.setCookedAt(cookedAt);
+        log.setWeekStart(WeekUtil.getWeekStart(cookedAt.toLocalDate()));
         log.setServings(request.servings());
         log.setNutritionTotalJson(request.nutritionTotalJson());
         log.setNutritionPerServingJson(request.nutritionPerServingJson());

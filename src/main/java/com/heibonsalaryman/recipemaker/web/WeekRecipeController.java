@@ -11,6 +11,7 @@ import com.heibonsalaryman.recipemaker.repository.CookLogRepository;
 import com.heibonsalaryman.recipemaker.repository.RecipeRepository;
 import com.heibonsalaryman.recipemaker.service.ShoppingService;
 import com.heibonsalaryman.recipemaker.service.WeekPlanService;
+import com.heibonsalaryman.recipemaker.util.WeekUtil;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -124,6 +125,7 @@ public class WeekRecipeController {
         CookLog log = new CookLog();
         log.setRecipe(recipe);
         log.setCookedAt(LocalDateTime.now());
+        log.setWeekStart(WeekUtil.getWeekStart(log.getCookedAt().toLocalDate()));
         log.setServings(recipe.getServings());
         log.setNutritionPerServingJson(recipe.getNutritionPerServingJson());
         log.setNutritionTotalJson(buildNutritionTotal(recipe.getNutritionPerServingJson(), recipe.getServings()));
