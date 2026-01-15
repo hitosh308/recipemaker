@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ShoppingItemRepository extends JpaRepository<ShoppingItem, UUID> {
     List<ShoppingItem> findByNameIgnoreCase(String name);
+
+    List<ShoppingItem> findByNameIgnoreCaseAndCheckedFalse(String name);
 }

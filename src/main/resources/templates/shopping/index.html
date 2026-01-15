@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" th:replace="layout :: layout(~{::content})">
+<div th:fragment="content">
+    <h1 class="h3 mb-4">買い物リスト</h1>
+
+    <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+    <div th:if="${estimateWarning}" class="alert alert-warning" role="alert" th:text="${estimateWarning}"></div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="h5 mb-3">手動追加</h2>
+            <form th:action="@{/shopping/add}" th:object="${form}" method="post" class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label" for="name">食材名</label>
+                    <input class="form-control" id="name" th:field="*{name}"
+                           th:classappend="${#fields.hasErrors('name')} ? 'is-invalid' : ''">
+                    <div class="invalid-feedback" th:errors="*{name}"></div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="quantity">数量</label>
+                    <input class="form-control" id="quantity" type="number" step="0.1" min="0"
+                           th:field="*{quantity}"
+                           th:classappend="${#fields.hasErrors('quantity')} ? 'is-invalid' : ''">
+                    <div class="invalid-feedback" th:errors="*{quantity}"></div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="unit">単位</label>
+                    <input class="form-control" id="unit" th:field="*{unit}"
+                           th:classappend="${#fields.hasErrors('unit')} ? 'is-invalid' : ''">
+                    <div class="invalid-feedback" th:errors="*{unit}"></div>
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" type="submit">追加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(items)}" class="alert alert-secondary" role="alert">
+        買い物リストは空です。
+    </div>
+
+    <div th:if="${!#lists.isEmpty(items)}" class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+            <tr>
+                <th style="width: 80px;">購入</th>
+                <th>食材名</th>
+                <th style="width: 140px;">数量</th>
+                <th>メモ</th>
+                <th style="width: 260px;">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${items}"
+                th:classappend="${item.checked} ? 'text-decoration-line-through text-muted' : ''">
+                <td>
+                    <form th:action="@{/shopping/{id}/toggle(id=${item.id})}" method="post">
+                        <input class="form-check-input" type="checkbox"
+                               th:checked="${item.checked}" onchange="this.form.submit()">
+                    </form>
+                </td>
+                <td th:text="${item.name}"></td>
+                <td>
+                    <span th:text="${item.quantity != null ? item.quantity : '-'}"></span>
+                    <span th:if="${item.unit != null}" th:text="${item.unit}"></span>
+                </td>
+                <td>
+                    <span th:if="${item.shelfLifeDaysHint != null}"
+                          th:text="'目安: ' + ${item.shelfLifeDaysHint} + '日'"></span>
+                </td>
+                <td>
+                    <div class="d-flex gap-2">
+                        <form th:action="@{/shopping/{id}/move-to-pantry(id=${item.id})}" method="post"
+                              class="d-flex align-items-center gap-2">
+                            <select class="form-select form-select-sm" name="storageType">
+                                <option th:each="storageType : ${storageTypes}"
+                                        th:value="${storageType}"
+                                        th:text="${storageType}"
+                                        th:selected="${storageType.name() == 'ROOM'}"></option>
+                            </select>
+                            <button class="btn btn-outline-primary btn-sm" type="submit">在庫へ追加</button>
+                        </form>
+                        <form th:action="@{/shopping/{id}/delete(id=${item.id})}" method="post">
+                            <button class="btn btn-outline-danger btn-sm" type="submit">削除</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</html>
