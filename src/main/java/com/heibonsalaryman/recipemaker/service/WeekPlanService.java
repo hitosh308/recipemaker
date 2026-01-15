@@ -62,6 +62,19 @@ public class WeekPlanService {
     }
 
     @Transactional
+    public WeekPlan getOrCreateWeek(LocalDate weekStart) {
+        LocalDate normalizedStart = WeekUtil.getWeekStart(weekStart);
+        return weekPlanRepository.findByWeekStart(normalizedStart)
+            .orElseGet(() -> {
+                WeekPlan plan = new WeekPlan();
+                plan.setWeekStart(normalizedStart);
+                plan.setWeekEnd(WeekUtil.getWeekEnd(normalizedStart));
+                plan.setStatus(WeekStatus.NOT_CREATED);
+                return weekPlanRepository.save(plan);
+            });
+    }
+
+    @Transactional
     public WeekPlan generate(LocalDate weekStart) {
         WeekPlan plan = getWeek(weekStart);
         if (plan.getStatus() != WeekStatus.NOT_CREATED) {
