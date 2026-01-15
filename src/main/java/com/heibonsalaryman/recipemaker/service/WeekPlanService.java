@@ -102,8 +102,18 @@ public class WeekPlanService {
     @Transactional
     public WeekPlan confirm(LocalDate weekStart, UUID recipeId) {
         WeekPlan plan = getWeek(weekStart);
+        if (plan.getStatus() != WeekStatus.GENERATING) {
+            throw new IllegalStateException("Week is not generating");
+        }
         Recipe recipe = recipeRepository.findById(recipeId)
             .orElseThrow(() -> new IllegalArgumentException("Recipe not found"));
+        List<WeekCandidate> candidates = getLatestCandidates(plan);
+        boolean isCandidate = candidates.stream()
+            .map(WeekCandidate::getRecipe)
+            .anyMatch(candidateRecipe -> candidateRecipe.getId().equals(recipe.getId()));
+        if (!isCandidate) {
+            throw new IllegalArgumentException("Recipe is not a current candidate");
+        }
         plan.setConfirmedRecipe(recipe);
         plan.setStatus(WeekStatus.CONFIRMED);
         return weekPlanRepository.save(plan);
