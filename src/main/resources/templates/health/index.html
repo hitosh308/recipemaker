@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" th:replace="layout :: layout(~{::content})">
+<div th:fragment="content">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h1 class="h3 mb-1">健康ダッシュボード</h1>
+            <p class="text-muted small mb-0">データは調理履歴（CookLog）から集計しています。</p>
+        </div>
+        <div class="btn-group" role="group" aria-label="期間切替">
+            <a class="btn btn-outline-primary"
+               th:classappend="${viewModel.days == 14} ? 'active'"
+               th:href="@{/health(days=14)}">14日</a>
+            <a class="btn btn-outline-primary"
+               th:classappend="${viewModel.days == 30} ? 'active'"
+               th:href="@{/health(days=30)}">30日</a>
+        </div>
+    </div>
+
+    <div th:if="${!viewModel.hasData}" class="alert alert-info">
+        履歴がありません。レシピ詳細の「調理した」から記録してください。
+    </div>
+
+    <div class="row g-3 mb-4" th:if="${viewModel.hasData}">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">期間合計カロリー</div>
+                    <div class="h4 mb-0" th:text="${viewModel.summary.totalCalories} + ' kcal'"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">1日平均カロリー</div>
+                    <div class="h4 mb-0" th:text="${viewModel.summary.avgCalories} + ' kcal'"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">1日平均たんぱく質</div>
+                    <div class="h4 mb-0" th:text="${viewModel.summary.avgProtein} + ' g'"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">1日平均塩分</div>
+                    <div class="h4 mb-0" th:text="${viewModel.summary.avgSalt} + ' g'"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive" th:if="${viewModel.hasData}">
+        <table class="table table-bordered align-middle">
+            <thead>
+            <tr>
+                <th style="min-width: 120px;">日付</th>
+                <th>カロリー</th>
+                <th>たんぱく質</th>
+                <th>脂質</th>
+                <th>炭水化物</th>
+                <th>塩分</th>
+                <th>糖質</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="daily : ${viewModel.dailyList}">
+                <td th:text="${#temporals.format(daily.date, 'M/d')}"></td>
+                <td>
+                    <div class="d-flex flex-column gap-1">
+                        <div class="d-flex align-items-center gap-2">
+                            <span th:text="${daily.calories} + ' kcal'"></span>
+                            <span class="badge text-bg-warning"
+                                  th:if="${daily.salt > 6}"
+                                  aria-label="塩分注意">塩分多め</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar"
+                                 role="progressbar"
+                                 th:style="'width:' + ((viewModel.maxCalories > 0) ? (daily.calories * 100.0 / viewModel.maxCalories) : 0) + '%'"
+                                 aria-hidden="true"></div>
+                        </div>
+                    </div>
+                </td>
+                <td th:text="${daily.protein} + ' g'"></td>
+                <td th:text="${daily.fat} + ' g'"></td>
+                <td th:text="${daily.carbs} + ' g'"></td>
+                <td>
+                    <span th:text="${daily.salt} + ' g'"></span>
+                    <span class="badge bg-warning text-dark ms-1" th:if="${daily.salt > 6}">高</span>
+                </td>
+                <td th:text="${daily.sugar} + ' g'"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</html>
